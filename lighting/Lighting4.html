@@ -1,0 +1,187 @@
+<!--  Demo of lighting using more detailed material and light
+   properties.  Same as Lighting2c otherwise.  Only changes are in
+   the fragment shader, which now gets material and light properties
+   as 3x3 matrices.  See Lighting3.js.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8" />
+      <title>Light/material properties</title>
+   </head>
+
+   <body>
+      <canvas id="theCanvas" width="600" height="400">
+         Please use a browser that supports "canvas"
+      </canvas>
+
+
+
+      <script id="vertexLightingShader" type="x-shader/x-vertex">
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+uniform mat3 normalMatrix;
+uniform vec4 lightPosition;
+uniform vec4 D;
+
+attribute vec4 a_Position;
+attribute vec3 a_Normal;
+
+varying vec3 fL;
+varying vec3 fN;
+varying vec3 fV;
+varying vec3 fD;
+void main()
+{
+  // convert position to eye coords
+  vec4 positionEye = view * model * a_Position;
+
+  // convert light position to eye coords
+  vec4 lightEye = view * lightPosition;
+
+  // vector to light
+  fL = (lightEye - positionEye).xyz;
+
+  // transform normal vector into eye coords
+  fN = normalMatrix * a_Normal;
+
+  // vector from vertex position toward view point
+  fV = normalize(-(positionEye).xyz);
+
+fD = normalize((view * D).xyz);
+
+
+
+
+  gl_Position = projection * view * model * a_Position;
+}
+      </script>
+
+      <script id="fragmentLightingShader" type="x-shader/x-fragment">
+
+
+precision mediump float;
+
+uniform mat3 materialProperties;
+uniform mat3 lightProperties;
+uniform float shininess;
+uniform float s;
+
+
+varying vec3 fL;
+varying vec3 fN;
+varying vec3 fV;
+varying vec3 fD;
+
+void main()
+{
+  // normalize after interpolating
+  vec3 N = normalize(fN);
+  vec3 L = normalize(fL);
+  vec3 V = normalize(fV);
+  vec3 DI = normalize(fD);
+  // reflected vector
+  vec3 R = reflect(-L, N);
+
+  // multiply each lighting constant with the corresponding material constant,
+  // then grab the three columns to get the ambient, diffuse, and specular components
+  mat3 products = matrixCompMult(lightProperties, materialProperties);
+  vec4 ambientColor = vec4(products[0], 1.0);
+  vec4 diffuseColor = vec4(products[1], 1.0);
+  vec4 specularColor = vec4(products[2], 1.0);
+
+  // Lambert's law, clamp negative values to zero
+  float diffuseFactor = max(0.0, dot(L, N));
+
+  // specular factor from Phong reflection model
+  float specularFactor = pow(max(0.0, dot(V, R)), shininess);
+
+  // add the components together
+  vec4 lightColor = specularColor * specularFactor + diffuseColor * diffuseFactor + ambientColor;
+  gl_FragColor = (pow(max(0.0, dot(-L, fD)), s) * lightColor);
+  gl_FragColor.a = 1.0;
+}
+      </script>
+
+      <script id="vertexColorShader" type="x-shader/x-vertex">
+uniform mat4 transform;
+attribute vec4 a_Position;
+attribute vec4 a_Color;
+varying vec4 color;
+void main()
+{
+  color = a_Color;
+  gl_Position = transform * a_Position;
+}
+      </script>
+
+      <script id="fragmentColorShader" type="x-shader/x-fragment">
+precision mediump float;
+varying vec4 color;
+void main()
+{
+  gl_FragColor = color;
+}
+      </script>
+
+      <script id="vertexSolidShader" type="x-shader/x-vertex">
+uniform mat4 transform;
+attribute vec4 a_Position;
+void main()
+{
+  gl_Position = transform * a_Position;
+}
+      </script>
+
+      <script id="fragmentSolidShader" type="x-shader/x-fragment">
+precision mediump float;
+uniform vec4 color;
+void main()
+{
+  gl_FragColor = color;
+}
+      </script>
+
+      <p>
+      Keyboard controls for light position and direction.  Initially, the
+      light object is at 0, 4, 0 and is rotated 90 degrees clockwise about its x-axis so
+      negative z-axis is pointing at origin
+      (I.e. it is "looking" down at the origin):
+      <ul style="list-style:none;">
+         <li>w, s - move forward, back (light will initially go up/down)
+            <li>a, d - move left, right
+               <li>r, f - move up, down (light will initially move closer/farther)
+                  <li>i, k - look up, look down (light will initially turn toward/away)
+                     <li>j, l - turn left, turn right
+                        <li>O - face origin (must not be aligned with y axis!)
+                           <li>I, J, K, L - orbit down, right, up, left
+                              <li>x, X, y, Y, z, Z - positive/negative rotations about light's own axis
+                                 <li>SPACE - pause rotation of cube
+                                    <li>c, C - Focus the spotlight
+
+
+      </ul>
+
+
+
+      <script src="../teal_book/webgl-utils.js"></script>
+      <script src="../teal_book/webgl-debug.js"></script>
+      <script src="../teal_book/cuon-utils.js"></script>
+      <script src="../teal_book/cuon-matrix.js"></script>
+
+      <!-- Use three.js if you have it locally, for easier debugging -->
+      <!--  script src="../../lib/three.js"></script -->
+
+      <!--  otherwise, load the minified version from the www -->
+      <script src="http://threejs.org/build/three.min.js"></script>
+
+      http://threejs.org/build/three.min.js
+      <script src="../hierarchy/CS336Object.js"></script>
+      <script src="../hierarchy/Camera.js"></script>
+      <script src="Lighting4.js"></script>
+      <script>window.onload = main</script>
+   </body>
+</html>

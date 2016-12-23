@@ -1,0 +1,57 @@
+<html>
+   <head>
+      <title>Skybox with Three.js app</title>
+      <style>
+      ul.b {text-align: left; float: left; clear: right; list-style-type: none}
+      ul.a {text-align: right; float: right; clear: right; list-style-type: none;}
+      div.center { text-align: center; background: #000000; }
+      </style>
+   </head>
+   <body>
+
+      <div class = "center">
+         <canvas id="theCanvas" width="600" height="400">
+            Please use a browser that supports "canvas"
+         </canvas>
+      </div>
+
+      <div class = "left">
+
+         <ul class="b">
+            <li>Ship controls
+            <li>------------
+            <li>w - move forward
+            <li>a - rotate left
+            <li>d - rotate right
+            <li>s, e - pull up, down
+            <li>B - switch to camera view
+         </ul>
+
+
+
+         <ul class ="a">
+            <li>Camera controls
+            <li>---------------
+            <li>w, a, s, d - move forward, left, back, right
+            <li>r, f - move up, down
+            <li>i, j, k, l - look up, left, down, right
+            <li>I, J, K, L - orbit down, right, up, left
+            <li>O - face origin
+            <li>p - put camera at origin
+            <li>W - decrease fov
+            <li>S - increase fov
+            <li>B - switch to ship view
+         </ul>
+      </div>
+
+      <script src="../threejs/three.js"></script>
+
+      <!--script src="../threejs/three.min.js"></script-->
+      <script src="../threejs/OBJLoader.js"></script>
+
+      <!--  script src="js/three.min.js"></script-->
+
+      <script src="SpaceSim.js"></script>
+      <script>window.onload = start</script>
+   </body>
+</html>
